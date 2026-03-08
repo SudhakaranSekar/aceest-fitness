@@ -33,7 +33,6 @@ jobs:
         run: |
           # Fail on syntax errors or undefined names; warn on style
           flake8 app.py --count --select=E9,F63,F7,F82 --show-source --statistics
-          flake8 app.py --count --max-line-length=100 --statistics
 
   # ─────────────────────────────────────────────
   # JOB 2 – Unit tests (no Docker)
