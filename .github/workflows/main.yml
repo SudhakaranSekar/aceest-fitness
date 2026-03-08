@@ -1,0 +1,95 @@
+name: ACEest CI/CD Pipeline
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  # ─────────────────────────────────────────────
+  # JOB 1 – Lint & static analysis
+  # ─────────────────────────────────────────────
+  lint:
+    name: Build & Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install flake8
+
+      - name: Lint with flake8
+        run: |
+          # Fail on syntax errors or undefined names; warn on style
+          flake8 app.py --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 app.py --count --max-line-length=100 --statistics
+
+  # ─────────────────────────────────────────────
+  # JOB 2 – Unit tests (no Docker)
+  # ─────────────────────────────────────────────
+  test:
+    name: Automated Testing (Pytest)
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Pytest with coverage
+        run: |
+          pytest tests/test_app.py -v --tb=short --cov=app --cov-report=term-missing
+
+  # ─────────────────────────────────────────────
+  # JOB 3 – Docker image build + container test
+  # ─────────────────────────────────────────────
+  docker:
+    name: Docker Image Assembly & Container Test
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t aceest-fitness:${{ github.sha }} .
+
+      - name: Start container
+        run: |
+          docker run -d \
+            --name aceest_test \
+            -p 5000:5000 \
+            aceest-fitness:${{ github.sha }}
+          # Give Flask a moment to initialise
+          sleep 5
+
+      - name: Health-check container
+        run: |
+          curl --fail http://localhost:5000/health || \
+          (docker logs aceest_test && exit 1)
+
+      - name: Stop and remove container
+        if: always()
+        run: docker rm -f aceest_test
