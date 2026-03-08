@@ -11,32 +11,31 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'pip install -r requirements.txt'
+                bat 'pip install -r requirements.txt'
             }
         }
 
         stage('Lint') {
             steps {
-                sh 'flake8 app.py --select=E9,F63,F7,F82 --show-source'
+                bat 'pip install flake8 && flake8 app.py --select=E9,F63,F7,F82 --show-source'
             }
         }
 
         stage('Unit Tests') {
             steps {
-                sh 'pytest tests/test_app.py -v --tb=short'
+                bat 'pytest tests/test_app.py -v'
             }
         }
 
         stage('Docker Build') {
             steps {
-                sh 'docker build -t aceest-fitness:jenkins-${BUILD_NUMBER} .'
+                bat 'docker build -t aceest-fitness:latest .'
             }
         }
     }
 
     post {
-        success { echo 'BUILD PASSED — all stages completed successfully.' }
-        failure { echo 'BUILD FAILED — check stage logs above.' }
-        always  { sh 'docker rmi aceest-fitness:jenkins-${BUILD_NUMBER} || true' }
+        success { echo 'BUILD PASSED - all stages completed successfully.' }
+        failure { echo 'BUILD FAILED - check stage logs above.' }
     }
 }
