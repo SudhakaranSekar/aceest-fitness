@@ -11,19 +11,19 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                bat 'pip install -r requirements.txt'
+                bat 'python -m pip install -r requirements.txt'
             }
         }
 
         stage('Lint') {
             steps {
-                bat 'pip install flake8 && flake8 app.py --select=E9,F63,F7,F82 --show-source'
+                bat 'python -m pip install flake8 && python -m flake8 app.py --select=E9,F63,F7,F82 --show-source'
             }
         }
 
         stage('Unit Tests') {
             steps {
-                bat 'pytest tests/test_app.py -v'
+                bat 'python -m pytest tests/test_app.py -v'
             }
         }
 
