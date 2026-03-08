@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        PYTHON = 'C:\Users\HP\AppData\Local\Programs\Python\Python313\python.exe'
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -11,19 +15,19 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                bat 'python -m pip install -r requirements.txt'
+                bat '"%PYTHON%" -m pip install -r requirements.txt'
             }
         }
 
         stage('Lint') {
             steps {
-                bat 'python -m pip install flake8 && python -m flake8 app.py --select=E9,F63,F7,F82 --show-source'
+                bat '"%PYTHON%" -m pip install flake8 && "%PYTHON%" -m flake8 app.py --select=E9,F63,F7,F82 --show-source'
             }
         }
 
         stage('Unit Tests') {
             steps {
-                bat 'python -m pytest tests/test_app.py -v'
+                bat '"%PYTHON%" -m pytest tests/test_app.py -v'
             }
         }
 
