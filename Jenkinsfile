@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Clone') {
             steps {
-                git branch: 'main', url: 'https://github.com/Sudhakaran7597/aceest-fitness.git'
+                git branch: 'main', url: 'https://github.com/SudhakaranSekar/aceest-fitness.git'
             }
         }
 
